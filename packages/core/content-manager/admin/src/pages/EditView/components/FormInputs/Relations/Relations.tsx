@@ -752,6 +752,9 @@ const RelationModalWithContext = ({
 
   React.useLayoutEffect(() => {
     setTextValue('');
+    // Also drop any active search: the next fetch must list the remaining entries
+    // (with the new value omitted), not re-run the query that led to this selection.
+    setSearchParams({ _q: '', page: 1 });
   }, [fieldValue]);
 
   const handleSearch = async (search: string) => {
@@ -798,7 +801,10 @@ const RelationModalWithContext = ({
           hasMoreItems={hasNextPage}
           loading={isLoadingSearchRelations || isLoadingPermissions}
           onOpenChange={() => {
-            handleSearch(textValue ?? '');
+            // Reopening always lists the remaining (not-yet-connected) entries from a
+            // clean slate rather than re-running a search left over from a selection.
+            setTextValue('');
+            handleSearch('');
           }}
           noOptionsMessage={() =>
             formatMessage({
